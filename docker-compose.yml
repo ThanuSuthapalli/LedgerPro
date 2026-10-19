@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ledger-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledger
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ledger-app
+    ports:
+      - '3000:3000'
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/ledger
+      - BETTER_AUTH_SECRET=ledger_pro_super_secret_key_12345
+      - BETTER_AUTH_URL=http://localhost:3000
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
